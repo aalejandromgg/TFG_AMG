@@ -181,6 +181,97 @@ tiempo_transcurrido4 = tiempo_transcurrido4/500;
 tiempo_transcurrido5 = tiempo_transcurrido5/500;
 tiempo_transcurrido6 = tiempo_transcurrido6/500;
 tiempo_transcurrido7 = tiempo_transcurrido7/500;
+
+%% PARAMETROS RESTANTES RED NEURONAL
+alpha_3 = (alpha_3 - min(alpha_3)) / (max(alpha_3) - min(alpha_3));
+beta_3 = (beta_3 - min(beta_3)) / (max(beta_3) - min(beta_3));
+gamma_3 = (gamma_3 - min(gamma_3)) / (max(gamma_3) - min(gamma_3));
+delta_3 = (delta_3 - min(delta_3)) / (max(delta_3) - min(delta_3));
+% GENERAR DATOS RED NEURONAL
+addpath('./stableinterp_new_v3/');
+load("stableinterp_new_v3\stable_table_40db.mat");
+fichero = "./TimeSeriesData/may_week1_csv/BPSyPPS.txt";
+fichero_ataque = "./TimeSeriesData/may_week1_csv/BPSyPPS_ataque_v2.txt";
+
+data1 = readtable(fichero);
+data2 = readtable(fichero_ataque);
+
+% Extrae las columnas de interés
+tiempo1 = data1{:, 1}; % Tiempo en UNIX
+%ELEGIR OPCION: bits por segundo o numero de paquetes por segundo
+bits1 = data1{:, 2}; % Número de bits/s
+paquetes1 = data1{:, 3}; % Número de paquetes/s
+
+tiempo2 = data2{:, 1}; % Tiempo en UNIX
+%ELEGIR OPCION: bits por segundo o numero de paquetes por segundo
+bits2 = data2{:, 2}; % Número de bits/s
+paquetes2 = data2{:, 3}; % Número de paquetes/s
+
+ventana = 15;
+size_ventana = ventana * 60;
+tiempo_env = tiempo1(1:(length(paquetes1)-size_ventana)+1);
+
+array_ataques = round(paquetes2 -paquetes1);
+% Inicializar el nuevo array para ver si hay ataque o no
+array_ataques_sn = zeros(size(array_ataques));
+% Ver donde hay 0s
+for i = 1:length(array_ataques)
+    if array_ataques(i) ~= 0
+        array_ataques_sn(i) = 1;
+    end
+end
+
+% Porcentajes de ataque
+num_ventanas = length(array_ataques_sn) - 899;
+
+% Inicializa un array para almacenar los porcentajes
+porcentajes = zeros(1, num_ventanas);
+
+% Itera sobre las ventanas de 900 valores
+for i = 1:num_ventanas
+    % Selecciona la ventana actual de 900 valores
+    ventana = array_ataques_sn(i:i+899);
+    
+    % Calcula el porcentaje de unos en la ventana actual
+    porcentaje_unos = (sum(ventana)/900);
+    
+    % Almacena el porcentaje en el array de porcentajes
+    porcentajes(i) = porcentaje_unos;
+end
+%porcentajes = zeros(length(alpha_3),1); % si no tiene ataque
+porcentajes = porcentajes';
+
+% DIAS Y HORAS
+fechas = datetime(tiempo_env, 'ConvertFrom', 'posixtime');
+%Entradas
+horas_decimal = hour(fechas) + minute(fechas)/60 + second(fechas)/3600;
+horas_decimal = (horas_decimal - min(horas_decimal)) / (max(horas_decimal) - min(horas_decimal));
+
+es_domingo = (weekday(fechas) == 1);
+es_lunes = (weekday(fechas) == 2);
+es_martes = (weekday(fechas) == 3);
+es_miercoles = (weekday(fechas) == 4);
+es_jueves = (weekday(fechas) == 5);
+es_viernes = (weekday(fechas) == 6);
+es_sabado = (weekday(fechas) == 7);
+
+paquetes_ataque = paquetes2 - paquetes1;
+paquetes_mezclado = paquetes2;
+num_ventanas = length(paquetes_mezclado) - 899;
+ventana = 15;
+size_ventana = ventana * 60;
+
+% CALCULO ENERGIA_ATAQUE
+for i = 1:num_ventanas
+    v1 = paquetes_ataque(i:size_ventana+i-1);
+    energia_ataque(i) = sum(v1.^2);
+
+    v2 = paquetes_mezclado(i:size_ventana+i-1);
+    energia_mezclado(i) = sum(v2.^2);
+
+    factor_energia(i) = energia_ataque(i)/energia_mezclado(i);
+end
+factor_energia = factor_energia';
 %% Histograma
 paquetes_hist = paquetes(indice_comienzo:indice_comienzo +900-1);
 tiempo_hist = tiempo(indice_comienzo:indice_comienzo +900-1);
