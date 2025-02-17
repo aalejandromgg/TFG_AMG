@@ -9,4 +9,4 @@ tiempo de referencia y después usaremos el **process.sh** del cual modificaremo
 
 - **Calculo de los parámetros de la red neuronal**: para el cálculo de los 4 parámetros alfa-estables tenemos dos funciones con 7 métodos para calcularlos, **f_CalculoParametrosTramos.m** que calcula los parámetros para un tramo del fichero y **f_CalculoParametrosCompleto.m** que los calcula para todo el fichero. Estas funciones se ejecutan en **CalculoParametrosMain.m**, donde además se calculan también el resto de parámetros para la red neuronal.  También se proporciona un .zip con las dependencias para poder ejecutar algunos métodos.
   
-- **Red neuronal** : se proporciona el diseño con la red neuronal que mejor rendimiento nos dio y también el **RedNeuronalMain.m** donde se pueden ver los resultados de la red y la parte de los umbrales de decisión
+- **Red neuronal** : se proporciona el diseño con la red neuronal que mejor rendimiento nos dió y también el **RedNeuronalMain.m** donde se pueden ver los resultados de la red y la parte de los umbrales de decisión
